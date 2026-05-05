@@ -53,14 +53,25 @@ export default function NovoCurriculo() {
     console.log(data)
     toast.success("Currículo cadastrado com sucesso!", {
       description: `${data.nome} foi adicionado ao sistema.`
+
     })
   }
+  const onError = (errors: any) => {
+  const primeiroErro = Object.values(errors)[0] as any
+  const mensagem = primeiroErro?.message || 
+    primeiroErro?.[0]?.empresa?.message ||
+    "Verifique os campos obrigatórios."
+  
+  toast.error("Erro ao cadastrar", {
+    description: mensagem
+  })
+}
 
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Cadastrar Currículo</h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
 
         {/* Dados pessoais */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
@@ -148,38 +159,82 @@ export default function NovoCurriculo() {
 
         {/* Experiências */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
-          <h2 className="font-bold text-slate-700">Experiências Profissionais</h2>
-          {expFields.map((field, index) => (
-            <div key={field.id} className="border border-slate-100 rounded-lg p-4 space-y-3 relative">
-              <input {...register(`experiencias.${index}.empresa`)} placeholder="Empresa" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
-              <input {...register(`experiencias.${index}.cargo`)} placeholder="Cargo" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
-              <div className="flex gap-2">
-                <input {...register(`experiencias.${index}.inicio`)} placeholder="Início (mm/aaaa)" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
-                <input {...register(`experiencias.${index}.fim`)} placeholder="Fim (mm/aaaa)" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
-              </div>
-              <textarea {...register(`experiencias.${index}.descricao`)} placeholder="Descrição" rows={2} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
-              {index > 0 && (
-                <button type="button" onClick={() => removeExp(index)} className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1">
-                  <FiTrash2 size={14} /> Remover
-                </button>
-              )}
-            </div>
-          ))}
-          <button type="button" onClick={() => appendExp({ empresa: "", cargo: "", inicio: "", fim: "", descricao: "" })} className="text-slate-600 hover:text-slate-900 text-sm flex items-center gap-1">
-            <FiPlus size={14} /> Adicionar experiência
-          </button>
+              <h2 className="font-bold text-slate-700">Experiências Profissionais</h2>
+              {expFields.map((field, index) => (
+                <div key={field.id} className="border border-slate-100 rounded-lg p-4 space-y-3 relative">
+                  <input {...register(`experiencias.${index}.empresa`)} placeholder="Empresa" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                  <input {...register(`experiencias.${index}.cargo`)} placeholder="Cargo" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                  <div className="flex gap-2">
+                    <input
+                      {...register(`experiencias.${index}.inicio`)}
+                      placeholder="Início (mm/aaaa)"
+                      maxLength={7}
+                      onChange={(e) => {
+                        let v = e.target.value.replace(/\D/g, "")
+                        v = v.replace(/(\d{2})(\d)/, "$1/$2")
+                        e.target.value = v
+                        register(`experiencias.${index}.inicio`).onChange(e)
+                      }}
+                      className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                    />
+                    <input
+                      {...register(`experiencias.${index}.fim`)}
+                      placeholder="Fim (mm/aaaa)"
+                      maxLength={7}
+                      onChange={(e) => {
+                        let v = e.target.value.replace(/\D/g, "")
+                        v = v.replace(/(\d{2})(\d)/, "$1/$2")
+                        e.target.value = v
+                        register(`experiencias.${index}.fim`).onChange(e)
+                      }}
+                      className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                    />
+                  </div>
+                  <textarea {...register(`experiencias.${index}.descricao`)} placeholder="Descrição" rows={2} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                  {index > 0 && (
+                    <button type="button" onClick={() => removeExp(index)} className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1">
+                      <FiTrash2 size={14} /> Remover
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button type="button" onClick={() => appendExp({ empresa: "", cargo: "", inicio: "", fim: "", descricao: "" })} className="text-slate-600 hover:text-slate-900 text-sm flex items-center gap-1">
+                <FiPlus size={14} /> Adicionar experiência
+              </button>
         </div>
 
-        {/* Formações */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+                {/* Formações */}
+              <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
           <h2 className="font-bold text-slate-700">Formações Acadêmicas</h2>
           {formFields.map((field, index) => (
             <div key={field.id} className="border border-slate-100 rounded-lg p-4 space-y-3">
               <input {...register(`formacoes.${index}.instituicao`)} placeholder="Instituição" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
               <input {...register(`formacoes.${index}.curso`)} placeholder="Curso" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
               <div className="flex gap-2">
-                <input {...register(`formacoes.${index}.inicio`)} placeholder="Início (mm/aaaa)" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
-                <input {...register(`formacoes.${index}.fim`)} placeholder="Fim (mm/aaaa)" className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                <input
+                  {...register(`formacoes.${index}.inicio`)}
+                  placeholder="Início (mm/aaaa)"
+                  maxLength={7}
+                  onChange={(e) => {
+                    let v = e.target.value.replace(/\D/g, "")
+                    v = v.replace(/(\d{2})(\d)/, "$1/$2")
+                    e.target.value = v
+                    register(`formacoes.${index}.inicio`).onChange(e)
+                  }}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                />
+                <input
+                  {...register(`formacoes.${index}.fim`)}
+                  placeholder="Fim (mm/aaaa)"
+                  maxLength={7}
+                  onChange={(e) => {
+                    let v = e.target.value.replace(/\D/g, "")
+                    v = v.replace(/(\d{2})(\d)/, "$1/$2")
+                    e.target.value = v
+                    register(`formacoes.${index}.fim`).onChange(e)
+                  }}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                />
               </div>
               {index > 0 && (
                 <button type="button" onClick={() => removeForm(index)} className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1">
@@ -208,7 +263,7 @@ export default function NovoCurriculo() {
           {isSubmitting ? "Salvando..." : "Cadastrar Currículo"}
         </button>
 
-      </form>
-    </div>
+        </form>
+        </div>
   )
 }
