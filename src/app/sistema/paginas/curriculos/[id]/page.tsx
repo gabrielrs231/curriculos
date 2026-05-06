@@ -48,6 +48,9 @@ export default async function DetalhesCurriculo({ params }: { params: Promise<{ 
           <p className="text-slate-500 flex items-center gap-2 mt-1">
             <FiPhone /> {curriculo.telefone}
           </p>
+          <p className="text-slate-500 flex items-center gap-2 mt-1">
+            <FiUser /> CPF: {curriculo.cpf}
+          </p>
         </div>
       </div>
 
