@@ -6,6 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 import { toast } from "sonner"
 import { FiPlus, FiTrash2 } from "react-icons/fi"
+import InputMask from "react-input-mask"
 
 const schema = yup.object({
   nome: yup.string().min(3, "Nome muito curto").required("Nome obrigatório"),
