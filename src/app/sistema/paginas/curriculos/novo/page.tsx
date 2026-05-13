@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm, useFieldArray, type SubmitHandler, type SubmitErrorHandler } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 import { toast } from "sonner"
+import Image from "next/image"
 import { FiPlus, FiTrash2 } from "react-icons/fi"
-import InputMask from "react-input-mask"
 
 const schema = yup.object({
   nome: yup.string().min(3, "Nome muito curto").required("Nome obrigatório"),
@@ -23,7 +23,7 @@ const schema = yup.object({
       fim: yup.string().required("Data de fim obrigatória"),
       descricao: yup.string().required("Descrição obrigatória"),
     })
-  ),
+  ).required("Experiências obrigatórias"),
   formacoes: yup.array().of(
     yup.object({
       instituicao: yup.string().required("Instituição obrigatória"),
@@ -31,7 +31,7 @@ const schema = yup.object({
       inicio: yup.string().required("Data de início obrigatória"),
       fim: yup.string().required("Data de fim obrigatória"),
     })
-  ),
+  ).required("Formações obrigatórias"),
   habilidades: yup.string().required("Habilidades obrigatórias"),
 })
 
@@ -50,23 +50,24 @@ export default function NovoCurriculo() {
   const { fields: expFields, append: appendExp, remove: removeExp } = useFieldArray({ control, name: "experiencias" })
   const { fields: formFields, append: appendForm, remove: removeForm } = useFieldArray({ control, name: "formacoes" })
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit: SubmitHandler<FormData> = (data) => {
     console.log(data)
     toast.success("Currículo cadastrado com sucesso!", {
       description: `${data.nome} foi adicionado ao sistema.`
 
     })
   }
-  const onError = (errors: any) => {
-  const primeiroErro = Object.values(errors)[0] as any
-  const mensagem = primeiroErro?.message || 
-    primeiroErro?.[0]?.empresa?.message ||
-    "Verifique os campos obrigatórios."
-  
-  toast.error("Erro ao cadastrar", {
-    description: mensagem
-  })
-}
+  const onError: SubmitErrorHandler<FormData> = (errors) => {
+    const primeiroErro = Object.values(errors)[0] as unknown
+    const mensagem =
+      (primeiroErro as { message?: string })?.message ||
+      (primeiroErro as Array<{ empresa?: { message?: string } }>)?.[0]?.empresa?.message ||
+      "Verifique os campos obrigatórios."
+
+    toast.error("Erro ao cadastrar", {
+      description: mensagem
+    })
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -145,11 +146,14 @@ export default function NovoCurriculo() {
                     className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-slate-400"
                      />
                     {preview && (
-                  <img
-                  src={preview}
-                  alt="Preview"
-                  className="mt-3 w-24 h-24 rounded-full object-cover border border-slate-200"
-                   />
+                  <Image
+                    src={preview}
+                    alt="Preview"
+                    width={96}
+                    height={96}
+                    unoptimized
+                    className="mt-3 rounded-full object-cover border border-slate-200"
+                  />
                    )}
                 </div>
               <label className="text-sm text-slate-600">Resumo Profissional</label>
