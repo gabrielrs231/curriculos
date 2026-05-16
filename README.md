@@ -92,4 +92,3 @@ npm run dev
 Acesse http://localhost:3000
 ```
 
-Seleciona tudo no editor do GitHub com **Ctrl+A**, apaga e cola esse conteúdo. Depois clica em **Commit changes**!   
